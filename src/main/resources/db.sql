@@ -77,11 +77,11 @@ insert into purchase(customer_id, product_id, "date") values (1, 1, '2020-01-04'
                                                              (6, 9, '2021-10-26'),
                                                              (7, 8, '2022-09-26');
 
---sql for searching by surname
+--sql for searching customers by surname
 
 select * from postgres.public.customers c where c.last_name=?;
 
---sql for searching product and its count
+--sql for searching customers who bought this product more times than minimum number of times
 
 select c.last_name, c.first_name, p2.product_name, count(*) as total_count
 from postgres.public.purchase p
@@ -91,7 +91,7 @@ where p2.product_name = ?
 group by c.last_name, c.first_name, p2.product_name
 having count(*) > ?;
 
---sql for total sum for the customer
+--sql for searching customers whose total sum of purchases is in the exact range
 select res.last_name, res.first_name, total
 from (
          select c.last_name, c.first_name, sum(p2.price) as total
@@ -124,7 +124,7 @@ group by res.last_name, res.first_name, total;
 --                              ) as x
 -- group by x.total_sum;
 
---sql for bad customers
+--sql for searching bad customers
 
 select c.last_name, c.first_name, count(*)
 from postgres.public.purchase p
