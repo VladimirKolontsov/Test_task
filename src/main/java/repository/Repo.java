@@ -1,11 +1,14 @@
 package repository;
 
 import exceptions.*;
+import input_data.Criterias;
 import input_data.SearchCriteria;
+import output_search.CriteriaOutput;
 import output_search.Customer;
 import output_search.Result;
 
 import java.sql.*;
+import java.util.List;
 import java.util.Optional;
 
 public class Repo {
@@ -60,20 +63,26 @@ public class Repo {
         return connection;
     }
 
-    public static Result findAllBySurname(String surname) {
+    public static Result findAllBySurname(List<SearchCriteria> searchCriteriaList) {
         String lastName;
         String firstName;
+
         Result resultBySurnameCustomers = new Result();
+        CriteriaOutput criteriaOutput = new CriteriaOutput();
+
+        criteriaOutput.setLastName(searchCriteriaList.get(0).getLastName());
+        resultBySurnameCustomers.setCriteriaOutput(criteriaOutput);
 
         try (PreparedStatement statement = getConnection().prepareStatement(lastNameSearch)) {
-            statement.setString(1, surname);
+            statement.setString(1, searchCriteriaList.get(0).getLastName());
             statement.execute();
             ResultSet resultSet = statement.getResultSet();
+
             while (!resultSet.isLast()) {
                 resultSet.next();
                 lastName = resultSet.getString("last_name");
                 firstName = resultSet.getString("first_name");
-                resultBySurnameCustomers.getResults().add(new Customer(lastName, firstName));
+                resultBySurnameCustomers.getCustomerList().add(new Customer(lastName, firstName));//лист покупателей в Result
             }
         } catch (SQLException e) {
             throw new InvalidSurname("no any customer with that surname");
@@ -81,21 +90,29 @@ public class Repo {
         return resultBySurnameCustomers;
     }
 
-    public static Result findAllByExactProductAndCount(String productName, int minTimes) {
+    public static Result findAllByExactProductAndCount(List<SearchCriteria> searchCriteriaList) {
         String lastName;
         String firstName;
         Result resultByProductAndCount = new Result();
+        CriteriaOutput criteriaOutput = new CriteriaOutput();
+
+        criteriaOutput.setProductName(searchCriteriaList.get(1).getProductName());
+        criteriaOutput.setMinTimes(searchCriteriaList.get(1).getMinTimes());
+
+        resultByProductAndCount.setCriteriaOutput(criteriaOutput);
+//        resultByProductAndCount.getCriteriaOutput().setProductName(searchCriteriaList.get(1).getProductName());
+//        resultByProductAndCount.getCriteriaOutput().setMinTimes(searchCriteriaList.get(1).getMinTimes());
 
         try (PreparedStatement statement = getConnection().prepareStatement(productSearch)) {
-            statement.setString(1, productName);
-            statement.setInt(2, minTimes);
+            statement.setString(1, searchCriteriaList.get(1).getProductName());
+            statement.setInt(2, searchCriteriaList.get(1).getMinTimes());
             statement.execute();
             ResultSet resultSet = statement.getResultSet();
             while (!resultSet.isLast()) {
                 resultSet.next();
                 lastName = resultSet.getString("last_name");
                 firstName = resultSet.getString("first_name");
-                resultByProductAndCount.getResults().add(new Customer(lastName, firstName));
+                resultByProductAndCount.getCustomerList().add(new Customer(lastName, firstName));
             }
         } catch (SQLException e) {
             throw new InvalidProductOrTimes("check product name or times not right");
@@ -103,21 +120,26 @@ public class Repo {
         return resultByProductAndCount;
     }
 
-    public static Result findAllByTotalSum(int minExpenses, int maxExpenses) {
+    public static Result findAllByTotalSum(List<SearchCriteria> searchCriteriaList) {
         String lastName;
         String firstName;
         Result resultByTotalSum = new Result();
+        CriteriaOutput criteriaOutput = new CriteriaOutput();
+
+        criteriaOutput.setMinExpenses(searchCriteriaList.get(2).getMinExpenses());
+        criteriaOutput.setMaxExpenses(searchCriteriaList.get(2).getMaxExpenses());
+        resultByTotalSum.setCriteriaOutput(criteriaOutput);
 
         try (PreparedStatement statement = getConnection().prepareStatement(totalSumSearch)) {
-            statement.setInt(1, minExpenses);
-            statement.setInt(2, maxExpenses);
+            statement.setInt(1, searchCriteriaList.get(2).getMinExpenses());
+            statement.setInt(2, searchCriteriaList.get(2).getMaxExpenses());
             statement.execute();
             ResultSet resultSet = statement.getResultSet();
             while (!resultSet.isLast()) {
                 resultSet.next();
                 lastName = resultSet.getString("last_name");
                 firstName = resultSet.getString("first_name");
-                resultByTotalSum.getResults().add(new Customer(lastName, firstName));
+                resultByTotalSum.getCustomerList().add(new Customer(lastName, firstName));
             }
         } catch (SQLException e) {
             throw new InvalidExpenses("check expenses range");
@@ -125,22 +147,24 @@ public class Repo {
         return resultByTotalSum;
     }
 
-    public static Result findBadCustomers(int badCustomers) {
+    public static Result findBadCustomers(List<SearchCriteria> searchCriteriaList) {
         String lastName;
         String firstName;
         Result resultByBadCustomers = new Result();
+        CriteriaOutput criteriaOutput = new CriteriaOutput();
+
+        criteriaOutput.setMinExpenses(searchCriteriaList.get(3).getBadCustomers());
+        resultByBadCustomers.setCriteriaOutput(criteriaOutput);
 
         try (PreparedStatement statement = getConnection().prepareStatement(findBadCustomersSearch)) {
-            statement.setInt(1, badCustomers);
+            statement.setInt(1, searchCriteriaList.get(3).getBadCustomers());
             statement.execute();
             ResultSet resultSet = statement.getResultSet();
             while (!resultSet.isLast()) {
                 resultSet.next();
                 lastName = resultSet.getString("last_name");
                 firstName = resultSet.getString("first_name");
-
-
-                resultByBadCustomers.getResults().add(new Customer(lastName, firstName));
+                resultByBadCustomers.getCustomerList().add(new Customer(lastName, firstName));
             }
         } catch (SQLException e) {
             throw new InvalidQuantityOfCustomers("choose the right quantity of bad customers");
