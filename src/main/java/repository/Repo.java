@@ -100,8 +100,6 @@ public class Repo {
         criteriaOutput.setMinTimes(searchCriteriaList.get(1).getMinTimes());
 
         resultByProductAndCount.setCriteriaOutput(criteriaOutput);
-//        resultByProductAndCount.getCriteriaOutput().setProductName(searchCriteriaList.get(1).getProductName());
-//        resultByProductAndCount.getCriteriaOutput().setMinTimes(searchCriteriaList.get(1).getMinTimes());
 
         try (PreparedStatement statement = getConnection().prepareStatement(productSearch)) {
             statement.setString(1, searchCriteriaList.get(1).getProductName());
@@ -171,7 +169,5 @@ public class Repo {
         }
         return resultByBadCustomers;
     }
-
-    //тут надо все полученные результаты объединить и потом запихать в один выходной json
 
 }

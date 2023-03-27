@@ -5,8 +5,12 @@ import output_search.OutputSearch;
 import output_search.Result;
 import repository.Repo;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,34 +28,15 @@ public class Main {
 
         if (args[3].equals("search")) {
             outputSearch.setType("search");
-            try {
+            try(BufferedWriter writer = new BufferedWriter(new FileWriter("output_search.json"))) {
                 Criterias criterias = objectMapper.readValue(Paths.get(args[4]).toFile(), Criterias.class);
                 List<SearchCriteria> searchCriteriaList = criterias.getCriterias();
+                outputSearch.setResults(concatResults(searchCriteriaList));
+
+                writer.write(objectMapper.writeValueAsString(outputSearch));
+
                 System.out.println(criterias);
-                //TODO поиск по фамилии
-                System.out.println("----------------------");
-                System.out.println(searchCriteriaList.get(0));
-                System.out.println(searchCriteriaList.get(0).getLastName());
-                System.out.println("----------------------");
-                System.out.println(Repo.findAllBySurname(searchCriteriaList));
-                //TODO поиск по продукту и минимальному количеству раз
-                System.out.println("----------------------");
-                System.out.println(searchCriteriaList.get(1));
-                System.out.println(searchCriteriaList.get(1).getProductName() + ", " + searchCriteriaList.get(1).getMinTimes());
-                System.out.println("----------------------");
-                System.out.println(Repo.findAllByExactProductAndCount(searchCriteriaList));
-                //TODO поиск по стоимости общих покупок в диапазоне
-                System.out.println("----------------------");
-                System.out.println(searchCriteriaList.get(2));
-                System.out.println(searchCriteriaList.get(2).getMinExpenses() + ", " + searchCriteriaList.get(2).getMaxExpenses());
-                System.out.println("----------------------");
-                System.out.println(Repo.findAllByTotalSum(searchCriteriaList));
-                //TODO поиск по пассивным покупателям
-                System.out.println("----------------------");
-                System.out.println(searchCriteriaList.get(3));
-                System.out.println("Quantity of bad customers " + searchCriteriaList.get(3).getBadCustomers());
-                System.out.println("----------------------");
-                System.out.println(Repo.findBadCustomers(searchCriteriaList));
+//
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -61,10 +46,16 @@ public class Main {
             //вызов одного жесткого запроса и запись в нужный вид
         }
 
-//        System.out.println(Repo.findAllBySurname("Иванов"));
-//        System.out.println(Repo.findAllByExactProductAndCount("хлеб", 3));
-//        System.out.println(Repo.findAllByTotalSum(1900, 27000));
-//        System.out.println(Repo.findBadCustomers(3));
+    }
+
+    private static List<Result> concatResults(List<SearchCriteria> searchCriteriaList) {
+        List<Result> result = new ArrayList<>();
+        result.add(Repo.findAllBySurname(searchCriteriaList));
+        result.add(Repo.findAllByExactProductAndCount(searchCriteriaList));
+        result.add(Repo.findAllByTotalSum(searchCriteriaList));
+        result.add(Repo.findBadCustomers(searchCriteriaList));
+
+        return result;
     }
 
 //    private static List<Result> search(String criteriaName, Criterias criterias) {
